@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-AI Assistant | ChatGPT + DeepSeek + Gemini</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            width: 100%;
+        }
+
+        header {
+            background: rgba(15, 23, 42, 0.9);
+            border-bottom: 1px solid #334155;
+            padding: 20px 0;
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #60a5fa;
+        }
+
+        .logo i {
+            color: #3b82f6;
+        }
+
+        .ai-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .ai-btn {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #cbd5e1;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ai-btn:hover {
+            background: #334155;
+        }
+
+        .ai-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .api-config-btn {
+            background: transparent;
+            border: 1px solid #60a5fa;
+            color: #60a5fa;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 10px;
+        }
+
+        .api-config-btn:hover {
+            background: rgba(96, 165, 250, 0.1);
+        }
+
+        main {
+            flex: 1;
+            padding: 30px 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* FIXED: Increased chat container height */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 80vh; /* Increased from 70vh to 80vh */
+            min-height: 600px; /* Added minimum height */
+            max-height: calc(100vh - 200px); /* Added maximum height */
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #334155;
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        .chat-header {
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.9);
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        .ai-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ai-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .chatgpt-icon {
+            background: #10a37f;
+        }
+
+        .deepseek-icon {
+            background: #4f46e5;
+        }
+
+        .gemini-icon {
+            background: #ea4335;
+        }
+
+        .ai-name {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .ai-description {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-height: 0; /* Important for flex scrolling */
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 85%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 5px;
+        }
+
+        .user-avatar {
+            background: #3b82f6;
+        }
+
+        .ai-avatar {
+            background: #475569;
+        }
+
+        .message-content {
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 16px;
+            border: 1px solid #334155;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-message .message-content {
+            background: #1d4ed8;
+            border-color: #3b82f6;
+        }
+
+        .message-text {
+            color: #f1f5f9;
+        }
+
+        .message-text a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        .message-text a:hover {
+            text-decoration: underline;
+        }
+
+        .message-text pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 10px 0;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .message-text code {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .message-text pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 8px;
+            text-align: right;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.9);
+            border-top: 1px solid #334155;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        #userInput {
+            flex: 1;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 15px;
+            color: #f1f5f9;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            resize: none;
+            min-height: 56px;
+            max-height: 120px;
+        }
+
+        #userInput:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        #sendBtn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            width: 56px;
+            height: 56px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #sendBtn:hover {
+            background: #2563eb;
+        }
+
+        #sendBtn:disabled {
+            background: #475569;
+            cursor: not-allowed;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .feature-card {
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #334155;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: #3b82f6;
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .feature-card:nth-child(1) .feature-icon {
+            background: rgba(16, 163, 127, 0.2);
+            color: #10a37f;
+        }
+
+        .feature-card:nth-child(2) .feature-icon {
+            background: rgba(79, 70, 229, 0.2);
+            color: #8b5cf6;
+        }
+
+        .feature-card:nth-child(3) .feature-icon {
+            background: rgba(234, 67, 53, 0.2);
+            color: #ea4335;
+        }
+
+        .feature-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .feature-desc {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        footer {
+            background: rgba(15, 23, 42, 0.9);
+            border-top: 1px solid #334155;
+            padding: 20px 0;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 14px;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        .api-key-setup {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #94a3b8;
+        }
+
+        .loading-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .loading-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #3b82f6;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 15px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #94a3b8;
+            animation: typing 1.5s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.3s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.15s; }
+        .typing-dot:nth-child(3) { animation-delay: 0s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid #3b82f6;
+            border-radius: 16px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            color: #f1f5f9;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            color: #60a5fa;
+        }
+
+        .api-input-group {
+            margin: 20px 0;
+        }
+
+        .api-input-group label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .api-input-group input {
+            width: 100%;
+            padding: 12px;
+            background: #1e293b;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            margin-bottom: 5px;
+        }
+
+        .api-input-group .key-status {
+            font-size: 12px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .api-input-group .key-status.valid {
+            color: #10a37f;
+        }
+
+        .api-input-group .key-status.invalid {
+            color: #ef4444;
+        }
+
+        .api-input-group a {
+            display: inline-block;
+            margin-top: 5px;
+            color: #60a5fa;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .api-input-group a:hover {
+            text-decoration: underline;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .primary-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .primary-btn:hover {
+            background: #2563eb;
+        }
+
+        .secondary-btn {
+            background: #475569;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .secondary-btn:hover {
+            background: #64748b;
+        }
+
+        .note {
+            margin-top: 15px;
+            font-size: 12px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #10a37f;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1001;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .notification.error {
+            background: #ef4444;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .api-mode-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .api-mode-indicator.active {
+            color: #10a37f;
+        }
+
+        .api-mode-indicator.inactive {
+            color: #ef4444;
+        }
+
+        /* Remember Me Checkbox Styles */
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 8px;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #3b82f6;
+        }
+
+        .remember-me label {
+            cursor: pointer;
+            user-select: none;
+            color: #cbd5e1;
+            font-size: 14px;
+        }
+
+        .remember-me i {
+            color: #60a5fa;
+        }
+
+        @media (max-width: 768px) {
+            .ai-selector {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            /* FIXED: Responsive chat container */
+            .chat-container {
+                height: 75vh; /* Adjusted for mobile */
+                min-height: 500px; /* Reduced minimum height for mobile */
+                max-height: calc(100vh - 180px); /* Adjusted for mobile */
+            }
+            
+            .message {
+                max-width: 95%;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .api-config-btn {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            /* FIXED: Further adjustments for very small screens */
+            .chat-container {
+                height: 70vh;
+                min-height: 400px;
+                max-height: calc(100vh - 150px);
+                margin-bottom: 20px;
+            }
+            
+            .chat-messages {
+                padding: 15px;
+            }
+            
+            .chat-header {
+                padding: 15px;
+            }
+            
+            .chat-input-container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Modal (Always shows first) -->
+    <div id="loginModal" class="modal active">
+        <div class="modal-content" style="max-width: 400px;">
+            <h2><i class="fas fa-sign-in-alt"></i> Multi-AI Assistant</h2>
+            <p>Login to access AI capabilities</p>
+            
+            <div class="api-input-group">
+                <label for="loginEmail">
+                    <i class="fas fa-envelope"></i> Email Address
+                </label>
+                <input type="email" id="loginEmail" placeholder="your@email.com">
+            </div>
+            
+            <div class="api-input-group">
+                <label for="loginPassword">
+                    <i class="fas fa-lock"></i> Password
+                </label>
+                <input type="password" id="loginPassword" placeholder="••••••••">
+            </div>
+            
+            <!-- Remember Me Checkbox -->
+            <div class="remember-me">
+                <input type="checkbox" id="rememberMe">
+                <label for="rememberMe">
+                    <i class="fas fa-check-circle"></i> Remember Me for 30 days
+                </label>
+            </div>
+            
+            <div id="loginError" style="color: #ef4444; font-size: 14px; margin: 10px 0; display: none;">
+                <i class="fas fa-exclamation-circle"></i> Invalid email or password
+            </div>
+            
+            <div class="modal-buttons">
+                <button id="loginBtn" class="primary-btn">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+            </div>
+            
+            <p class="note">
+                <i class="fas fa-info-circle"></i> 
+                Public users can use the assistant. Admin login required for API settings.
+            </p>
+        </div>
+    </div>
+
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-robot"></i>
+                    <span id="siteTitle">Multi-AI Assistant</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div class="ai-selector">
+                        <button class="ai-btn active" data-ai="auto">
+                            <i class="fas fa-magic"></i> Auto Select
+                        </button>
+                        <button class="ai-btn" data-ai="chatgpt">
+                            <i class="fas fa-comment"></i> ChatGPT
+                        </button>
+                        <button class="ai-btn" data-ai="deepseek">
+                            <i class="fas fa-code"></i> DeepSeek
+                        </button>
+                        <button class="ai-btn" data-ai="gemini">
+                            <i class="fas fa-image"></i> Gemini
+                        </button>
+                    </div>
+                    <button id="openApiConfig" class="api-config-btn" style="display: none;">
+                        <i class="fas fa-key"></i> Admin Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="ai-info">
+                    <div class="ai-icon chatgpt-icon">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                    <div>
+                        <div class="ai-name">Auto AI Selector</div>
+                        <div class="ai-description">Login to access real AI capabilities</div>
+                    </div>
+                </div>
+                <div class="loading" id="statusIndicator">
+                    <i class="fas fa-circle" style="color: #ef4444;"></i>
+                    <span id="statusText">Not Logged In</span>
+                    <span id="apiMode" class="api-mode-indicator inactive">
+                        <i class="fas fa-plug"></i> Login Required
+                    </span>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message">
+                    <div class="avatar ai-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-text">
+                            <strong>Welcome to Multi-AI Assistant!</strong><br><br>
+                            Please login to use the AI assistant. All users share the same AI capabilities.<br><br>
+                            • <strong>ChatGPT</strong> for reasoning, writing, creative tasks<br>
+                            • <strong>DeepSeek</strong> for coding, math, technical queries<br>
+                            • <strong>Gemini</strong> for images, vision, multimodal tasks<br><br>
+                            <em>Admin login required for API configuration.</em>
+                        </div>
+                        <div class="message-time">Just now</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <div class="input-wrapper">
+                    <textarea id="userInput" placeholder="Please login to use the AI assistant..." rows="1" disabled></textarea>
+                    <button id="sendBtn" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="api-key-setup">
+                    <strong><i class="fas fa-user"></i> Status:</strong> 
+                    <span id="apiStatusText">Please login to use the assistant</span>
+                    <button id="quickLogin" style="margin-left: 10px; padding: 4px 8px; background: transparent; border: 1px solid #60a5fa; color: #60a5fa; border-radius: 4px; cursor: pointer;">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-comment-dots"></i>
+                </div>
+                <h3 class="feature-title">ChatGPT</h3>
+                <p class="feature-desc">Best for reasoning, creative writing, brainstorming, and general conversation. Uses GPT-4 technology for nuanced understanding and human-like responses.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-code"></i>
+                </div>
+                <h3 class="feature-title">DeepSeek</h3>
+                <p class="feature-desc">Specialized for coding, mathematics, technical problem-solving, and logical reasoning. Excellent for debugging, algorithm design, and data analysis.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-image"></i>
+                </div>
+                <h3 class="feature-title">Gemini</h3>
+                <p class="feature-desc">Optimized for image analysis, multimodal tasks, visual understanding, and Google ecosystem integration. Great for content generation with visual context.</p>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>Multi-AI Assistant | ChatGPT + DeepSeek + Gemini | Public Access</p>
+            <p style="font-size: 12px; margin-top: 5px;">
+                <i class="fas fa-user-shield"></i> Admin: imulla311@gmail.com
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // ========== ADMIN CREDENTIALS ==========
+        const ADMIN_EMAIL = "imulla311@gmail.com";
+        const ADMIN_PASSWORD = "Imulla@311";
+        
+        // ========== REMEMBER ME SETTINGS ==========
+        const REMEMBER_DAYS = 30;
+        
+        // ========== API ENDPOINTS ==========
+        // These endpoints will be on your Vercel backend
+        const API_ENDPOINTS = {
+            chat: '/api/chat', // Endpoint to handle AI requests
+            status: '/api/status' // Endpoint to check API status
+        };
+        
+        // ========== APP STATE ==========
+        let isAdmin = false;
+        let isLoggedIn = false;
+        let selectedAI = 'auto';
+        let isProcessing = false;
+        let currentUserEmail = '';
+        let apiKeysAvailable = false;
+        
+        // ========== DOM ELEMENTS ==========
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const aiButtons = document.querySelectorAll('.ai-btn');
+        const aiName = document.querySelector('.ai-name');
+        const aiDescription = document.querySelector('.ai-description');
+        const aiIcon = document.querySelector('.ai-icon');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
+        const apiStatusText = document.getElementById('apiStatusText');
+        const quickLoginBtn = document.getElementById('quickLogin');
+        const loginModal = document.getElementById('loginModal');
+        const loginEmail = document.getElementById('loginEmail');
+        const loginPassword = document.getElementById('loginPassword');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginError = document.getElementById('loginError');
+        const rememberMeCheckbox = document.getElementById('rememberMe');
+        
+        // ========== INITIALIZATION ==========
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log("🚀 Multi-AI Assistant Initialized");
+            
+            setupEventListeners();
+            await checkApiStatus();
+            checkExistingLogin();
+            
+            // Auto-resize textarea
+            userInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+        });
+        
+        // ========== CHECK API STATUS ==========
+        async function checkApiStatus() {
+            try {
+                console.log("🔍 Checking API status...");
+                const response = await fetch(API_ENDPOINTS.status);
+                if (response.ok) {
+                    const data = await response.json();
+                    apiKeysAvailable = data.available || false;
+                    console.log("✅ API Status:", data.message || "Connected");
+                } else {
+                    console.log("❌ API Status Check Failed");
+                    apiKeysAvailable = false;
+                }
+            } catch (error) {
+                console.log("❌ API Status Error:", error.message);
+                apiKeysAvailable = false;
+            }
+            
+            if (!apiKeysAvailable) {
+                console.log("⚠️ API keys not configured on server");
+                console.log("📝 Setup Instructions:");
+                console.log("1. Go to Vercel Dashboard → Your Project");
+                console.log("2. Go to Settings → Environment Variables");
+                console.log("3. Add these variables:");
+                console.log("   - OPENAI_API_KEY");
+                console.log("   - DEEPSEEK_API_KEY");
+                console.log("   - GEMINI_API_KEY");
+                console.log("4. Redeploy your project");
+            }
+        }
+        
+        // ========== SETUP EVENT LISTENERS ==========
+        function setupEventListeners() {
+            // Send message
+            sendBtn.addEventListener('click', sendMessage);
+            userInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // AI selection
+            aiButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (!isLoggedIn) {
+                        showNotification('Please login first', 'error');
+                        loginModal.classList.add('active');
+                        return;
+                    }
+                    aiButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedAI = this.dataset.ai;
+                    updateAIInfo(selectedAI);
+                });
+            });
+            
+            // Login
+            loginBtn.addEventListener('click', handleLogin);
+            loginPassword.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+            
+            // Quick login button
+            quickLoginBtn.addEventListener('click', () => {
+                loginModal.classList.add('active');
+            });
+            
+            // Remember me checkbox
+            if (rememberMeCheckbox) {
+                rememberMeCheckbox.addEventListener('change', function() {
+                    console.log('Remember me changed to:', this.checked);
+                });
+            }
+        }
+        
+        // ========== LOGIN HANDLING ==========
+        function handleLogin() {
+            const email = loginEmail.value.trim();
+            const password = loginPassword.value.trim();
+            const rememberMe = rememberMeCheckbox ? rememberMeCheckbox.checked : false;
+            
+            if (!email || !password) {
+                loginError.textContent = 'Please enter both email and password';
+                loginError.style.display = 'block';
+                return;
+            }
+            
+            if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+                handleSuccessfulLogin(email, true, rememberMe);
+            } else if (email && password) {
+                handleSuccessfulLogin(email, false, rememberMe);
+            } else {
+                loginError.textContent = 'Invalid email or password';
+                loginError.style.display = 'block';
+            }
+        }
+        
+        function handleSuccessfulLogin(email, isAdminUser, rememberMe) {
+            currentUserEmail = email;
+            isAdmin = isAdminUser;
+            isLoggedIn = true;
+            loginError.style.display = 'none';
+            loginModal.classList.remove('active');
+            
+            // Save login state
+            const loginData = {
+                email: email,
+                isAdmin: isAdminUser,
+                timestamp: new Date().getTime()
+            };
+            
+            if (rememberMe) {
+                // Long-term storage (30 days)
+                const expiryDate = new Date();
+                expiryDate.setDate(expiryDate.getDate() + REMEMBER_DAYS);
+                loginData.expiry = expiryDate.getTime();
+                
+                localStorage.setItem('multiAI_loginData', JSON.stringify(loginData));
+                localStorage.setItem('multiAI_rememberMe', 'true');
+                console.log('Login saved to localStorage with 30-day expiry');
+            } else {
+                // Session storage
+                sessionStorage.setItem('multiAI_loginData', JSON.stringify(loginData));
+                localStorage.setItem('multiAI_rememberMe', 'false');
+                console.log('Login saved to sessionStorage (browser session only)');
+            }
+            
+            updateUIForLoggedInUser(isAdminUser);
+            showNotification(isAdminUser ? 'Admin logged in successfully!' : `Welcome ${email}!`, 'info');
+        }
+        
+        function checkExistingLogin() {
+            // Check localStorage first for remember me
+            let loginData = localStorage.getItem('multiAI_loginData');
+            const rememberMe = localStorage.getItem('multiAI_rememberMe') === 'true';
+            
+            // If not in localStorage or remember me is false, check sessionStorage
+            if (!loginData || !rememberMe) {
+                loginData = sessionStorage.getItem('multiAI_loginData');
+            }
+            
+            if (loginData) {
+                try {
+                    const data = JSON.parse(loginData);
+                    
+                    // Check if login has expired
+                    if (data.expiry && data.expiry < new Date().getTime()) {
+                        console.log('Login expired, clearing...');
+                        localStorage.removeItem('multiAI_loginData');
+                        sessionStorage.removeItem('multiAI_loginData');
+                        return;
+                    }
+                    
+                    // Auto-login
+                    currentUserEmail = data.email;
+                    isLoggedIn = true;
+                    isAdmin = data.isAdmin || false;
+                    loginModal.classList.remove('active');
+                    updateUIForLoggedInUser(isAdmin);
+                    
+                    showNotification(isAdmin ? 'Welcome back Admin!' : `Welcome back ${data.email}!`, 'info');
+                    
+                } catch (e) {
+                    console.error('Error parsing login data:', e);
+                }
+            }
+        }
+        
+        function updateUIForLoggedInUser(isAdminUser) {
+            // Enable input and send button
+            userInput.disabled = false;
+            userInput.placeholder = "Type your message here... (Press Shift+Enter for new line)";
+            sendBtn.disabled = false;
+            
+            // Update status
+            statusText.textContent = 'Ready';
+            statusIndicator.querySelector('i').style.color = '#10a37f';
+            
+            // Add logout button
+            addLogoutButton();
+            
+            if (isAdminUser) {
+                // Admin UI
+                document.getElementById('siteTitle').textContent = 'Multi-AI Assistant (Admin)';
+                document.getElementById('openApiConfig').style.display = 'block';
+                apiStatusText.textContent = 'Admin Mode - All APIs Active';
+                aiDescription.textContent = 'Admin mode - All AI services available';
+            } else {
+                // Public user UI
+                document.getElementById('siteTitle').textContent = 'Multi-AI Assistant';
+                document.getElementById('openApiConfig').style.display = 'none';
+                apiStatusText.textContent = 'Public Mode - Real AI Access';
+                aiDescription.textContent = 'Public access - Real AI services';
+            }
+            
+            // Add welcome message to chat
+            const welcomeMsg = isAdminUser 
+                ? `Welcome Admin! You have full access to all AI services.`
+                : `Welcome ${currentUserEmail}! You can now use the AI assistant.`;
+            
+            addMessage(welcomeMsg, 'ai', 'system');
+        }
+        
+        // ========== LOGOUT FUNCTIONALITY ==========
+        function addLogoutButton() {
+            // Check if logout button already exists
+            if (document.getElementById('logoutBtn')) return;
+            
+            const logoutBtn = document.createElement('button');
+            logoutBtn.id = 'logoutBtn';
+            logoutBtn.className = 'api-config-btn';
+            logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
+            logoutBtn.style.marginLeft = '10px';
+            
+            logoutBtn.addEventListener('click', handleLogout);
+            
+            // Insert after API config button
+            const headerActions = document.querySelector('.header-content > div:last-child');
+            if (headerActions) {
+                headerActions.appendChild(logoutBtn);
+            }
+        }
+        
+        function handleLogout() {
+            // Clear login data
+            localStorage.removeItem('multiAI_loginData');
+            sessionStorage.removeItem('multiAI_loginData');
+            
+            // Reset state
+            isLoggedIn = false;
+            isAdmin = false;
+            currentUserEmail = '';
+            
+            // Update UI
+            userInput.disabled = true;
+            userInput.placeholder = "Please login to use the AI assistant...";
+            sendBtn.disabled = true;
+            
+            document.getElementById('siteTitle').textContent = 'Multi-AI Assistant';
+            document.getElementById('openApiConfig').style.display = 'none';
+            
+            // Remove logout button
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) logoutBtn.remove();
+            
+            // Reset AI selector
+            aiButtons.forEach(btn => btn.classList.remove('active'));
+            document.querySelector('.ai-btn[data-ai="auto"]').classList.add('active');
+            selectedAI = 'auto';
+            
+            // Update status
+            statusText.textContent = 'Not Logged In';
+            statusIndicator.querySelector('i').style.color = '#ef4444';
+            apiStatusText.textContent = 'Please login to use the assistant';
+            aiDescription.textContent = 'Login to access real AI capabilities';
+            aiIcon.className = 'ai-icon chatgpt-icon';
+            aiIcon.innerHTML = '<i class="fas fa-magic"></i>';
+            aiName.textContent = 'Auto AI Selector';
+            
+            // Show logout message
+            addMessage('You have been logged out. Please login again to use the AI assistant.', 'ai', 'system');
+            showNotification('Logged out successfully', 'info');
+            
+            // Show login modal
+            loginModal.classList.add('active');
+        }
+        
+        // ========== MESSAGE HANDLING ==========
+        async function sendMessage() {
+            if (!isLoggedIn) {
+                showNotification('Please login first', 'error');
+                loginModal.classList.add('active');
+                return;
+            }
+            
+            const message = userInput.value.trim();
+            if (!message || isProcessing) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            
+            // Clear input
+            userInput.value = '';
+            userInput.style.height = 'auto';
+            
+            // Determine AI to use
+            const aiToUse = selectedAI === 'auto' ? determineAI(message) : selectedAI;
+            
+            // Show typing indicator
+            showTypingIndicator(aiToUse);
+            
+            // Set processing state
+            isProcessing = true;
+            sendBtn.disabled = true;
+            updateStatus('processing', `Processing with ${aiToUse}...`);
+            
+            try {
+                // Call backend API
+                const response = await callBackendAPI(message, aiToUse);
+                
+                removeTypingIndicator();
+                addMessage(response, 'ai', aiToUse);
+                updateStatus('ready', 'Ready');
+                showNotification('Response received', 'info');
+                
+            } catch (error) {
+                console.error('API Error:', error);
+                removeTypingIndicator();
+                
+                // User-friendly error messages
+                let errorMessage = '';
+                if (error.message.includes('401')) {
+                    errorMessage = `API key error for ${aiToUse}. The API key may be invalid or expired.`;
+                } else if (error.message.includes('429')) {
+                    errorMessage = 'Rate limit exceeded. Please wait a moment before trying again.';
+                } else if (error.message.includes('Network')) {
+                    errorMessage = 'Network error. Please check your internet connection.';
+                } else if (error.message.includes('API key')) {
+                    errorMessage = `Please configure ${aiToUse} API key in Vercel environment variables.`;
+                } else {
+                    errorMessage = `Error: ${error.message}`;
+                }
+                
+                addMessage(errorMessage, 'ai', aiToUse);
+                updateStatus('error', 'API Error');
+                showNotification('Failed to get response', 'error');
+                
+            } finally {
+                isProcessing = false;
+                sendBtn.disabled = false;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+        
+        // ========== BACKEND API CALL ==========
+        async function callBackendAPI(message, aiType) {
+            console.log(`📞 Calling ${aiType} via backend...`);
+            
+            const response = await fetch(API_ENDPOINTS.chat, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    ai: aiType,
+                    user: currentUserEmail
+                })
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`❌ Backend API Error:`, errorText);
+                throw new Error(`${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log(`✅ Backend Response:`, data);
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            return data.response || data.message || "No response from AI";
+        }
+        
+        // ========== AI SELECTION LOGIC ==========
+        function determineAI(query) {
+            const lowerQuery = query.toLowerCase();
+            
+            // Coding/Technical queries → DeepSeek
+            if (/code|program|function|algorithm|debug|javascript|python|html|css|java|c\+\+|sql|database|api|git|terminal|error|bug|fix/i.test(lowerQuery)) {
+                return 'deepseek';
+            }
+            
+            // Math queries → DeepSeek
+            if (/math|calculate|equation|formula|statistic|probability|algebra|calculus|solve.*problem/i.test(lowerQuery)) {
+                return 'deepseek';
+            }
+            
+            // Image/Visual queries → Gemini
+            if (/image|picture|photo|visual|draw|generate.*image|describe.*image|analyze.*image|vision|look.*like/i.test(lowerQuery)) {
+                return 'gemini';
+            }
+            
+            // Writing/Creative queries → ChatGPT
+            if (/write|essay|story|poem|creative|article|blog|email|letter|content|brainstorm|paraphrase|rewrite|translate/i.test(lowerQuery)) {
+                return 'chatgpt';
+            }
+            
+            // Default to ChatGPT
+            return 'chatgpt';
+        }
+        
+        function updateAIInfo(ai) {
+            switch(ai) {
+                case 'chatgpt':
+                    aiName.textContent = 'ChatGPT';
+                    aiIcon.className = 'ai-icon chatgpt-icon';
+                    aiIcon.innerHTML = '<i class="fas fa-comment"></i>';
+                    break;
+                case 'deepseek':
+                    aiName.textContent = 'DeepSeek';
+                    aiIcon.className = 'ai-icon deepseek-icon';
+                    aiIcon.innerHTML = '<i class="fas fa-code"></i>';
+                    break;
+                case 'gemini':
+                    aiName.textContent = 'Gemini';
+                    aiIcon.className = 'ai-icon gemini-icon';
+                    aiIcon.innerHTML = '<i class="fas fa-image"></i>';
+                    break;
+                default:
+                    aiName.textContent = 'Auto AI Selector';
+                    aiIcon.className = 'ai-icon chatgpt-icon';
+                    aiIcon.innerHTML = '<i class="fas fa-magic"></i>';
+            }
+        }
+        
+        // ========== UI HELPER FUNCTIONS ==========
+        function addMessage(text, sender, aiUsed = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            let avatarIcon = sender === 'user' 
+                ? '<i class="fas fa-user"></i>' 
+                : aiUsed === 'deepseek' 
+                    ? '<i class="fas fa-code"></i>'
+                    : aiUsed === 'gemini'
+                        ? '<i class="fas fa-image"></i>'
+                        : '<i class="fas fa-robot"></i>';
+            
+            let avatarClass = sender === 'user' ? 'user-avatar' : 'ai-avatar';
+            
+            messageDiv.innerHTML = `
+                <div class="avatar ${avatarClass}">
+                    ${avatarIcon}
+                </div>
+                <div class="message-content">
+                    <div class="message-text">${formatMessage(text)}</div>
+                    <div class="message-time">${time} ${aiUsed && sender === 'ai' ? `• ${aiUsed.toUpperCase()}` : ''}</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function formatMessage(text) {
+            // Convert markdown-style code blocks
+            let formattedText = text
+                .replace(/```(\w+)?\n([\s\S]*?)```/g, 
+                    '<pre><code class="language-$1">$2</code></pre>')
+                .replace(/`([^`]+)`/g, 
+                    '<code>$1</code>')
+                .replace(/\n/g, '<br>');
+            
+            // Convert URLs to links
+            formattedText = formattedText.replace(
+                /(https?:\/\/[^\s<]+[^\s<.,:;!?)])/g, 
+                '<a href="$1" target="_blank" rel="noopener">$1</a>'
+            );
+            
+            return formattedText;
+        }
+        
+        function showTypingIndicator(ai) {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message';
+            typingDiv.id = 'typingIndicator';
+            
+            let avatarIcon = ai === 'deepseek' 
+                ? '<i class="fas fa-code"></i>'
+                : ai === 'gemini'
+                    ? '<i class="fas fa-image"></i>'
+                    : '<i class="fas fa-robot"></i>';
+            
+            typingDiv.innerHTML = `
+                <div class="avatar ai-avatar">
+                    ${avatarIcon}
+                </div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+        
+        function updateStatus(status, text) {
+            const icon = statusIndicator.querySelector('i');
+            statusText.textContent = text;
+            
+            switch(status) {
+                case 'processing':
+                    icon.style.color = '#f59e0b';
+                    break;
+                case 'ready':
+                    icon.style.color = '#10a37f';
+                    break;
+                case 'error':
+                    icon.style.color = '#ef4444';
+                    break;
+            }
+        }
+        
+        function showNotification(message, type = 'info') {
+            // Remove existing notification
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type === 'error' ? 'error' : ''}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'}"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
